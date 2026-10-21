@@ -1,5 +1,5 @@
 {
-  "name": "react-example",
+  "name": "wcat",
   "private": true,
   "version": "3.5.0",
   "type": "module",
@@ -36,7 +36,8 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "shortcutName": "Wcat",
-      "artifactName": "Wcat-Setup-${version}.${ext}"
+      "uninstallDisplayName": "Wcat",
+      "artifactName": "Wcat Setup ${version}.${ext}"
     },
     "linux": {
       "target": [
