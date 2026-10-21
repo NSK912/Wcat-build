@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist dist-electron server.js release",
     "lint": "tsc --noEmit",
-    "electron:build": "vite build && npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext && electron-builder --linux AppImage"
+    "electron:build": "vite build && npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext && electron-builder --linux AppImage",
+    "electron:build:win": "vite build && npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext && electron-builder --win nsis"
   },
   "build": {
     "appId": "com.app.videocutter",
@@ -22,6 +23,16 @@
       "dist/**/*",
       "dist-electron/**/*"
     ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "VideoCutterPro"
+    },
     "linux": {
       "target": [
         "AppImage"
