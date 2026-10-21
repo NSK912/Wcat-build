@@ -22,8 +22,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install --force
-          npm install @rollup/rollup-win32-x64-msvc --no-save
+          node -e "if (require('fs').existsSync('package-lock.json')) require('fs').unlinkSync('package-lock.json')"
+          npm install
 
       - name: Build Windows Installer
         run: npm run electron:build:win
