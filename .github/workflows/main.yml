@@ -1,4 +1,4 @@
-name: Build Windows Exe Installer
+name: Build Electron Linux AppImage
 
 on:
   push:
@@ -6,9 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
-    name: Build Windows Installer (.exe)
-    runs-on: windows-latest
+  build-linux:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -25,13 +24,13 @@ jobs:
           node -e "if (require('fs').existsSync('package-lock.json')) require('fs').unlinkSync('package-lock.json')"
           npm install
 
-      - name: Build Windows Installer
-        run: npm run electron:build:win
+      - name: Build Linux AppImage
+        run: npm run electron:build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Windows Artifact
+      - name: Upload AppImage Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installer
-          path: release/*.exe
+          name: linux-appimage
+          path: release/*.AppImage
