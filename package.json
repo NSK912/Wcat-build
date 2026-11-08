@@ -12,7 +12,7 @@
     "lint": "tsc --noEmit",
     "generate:icons": "node scripts/generate-icons.js",
     "electron:build": "npm run generate:icons && vite build && npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext && electron-builder --linux AppImage",
-    "electron:build:win": "npm run generate:icons && vite build && npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext && electron-builder --win nsis --x64 --arm64"
+    "electron:build:win": "npm run generate:icons && vite build && npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext && electron-builder --win"
   },
   "build": {
     "appId": "com.wcat.app",
@@ -28,7 +28,19 @@
     ],
     "win": {
       "target": [
-        "nsis"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "appx",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ],
       "icon": "build/icon.png"
     },
@@ -37,6 +49,13 @@
       "allowToChangeInstallationDirectory": true,
       "shortcutName": "Wcat",
       "uninstallDisplayName": "Wcat",
+      "artifactName": "Wcat Setup ${version}-${arch}.${ext}"
+    },
+    "appx": {
+      "applicationId": "Wcat",
+      "identityName": "NSK-Natsuki.SeedPlanet",
+      "publisherDisplayName": "NSK-Natsuki",
+      "publisher": "CN=F2BD52C0-1826-4F4C-953A-B27311D542C3",
       "artifactName": "Wcat Setup ${version}-${arch}.${ext}"
     },
     "linux": {
