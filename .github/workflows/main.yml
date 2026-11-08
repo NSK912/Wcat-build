@@ -1,1 +1,52 @@
+name: Build Windows Installers (x64 EXE + x64/ARM64 AppX)
 
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    name: Build Windows Installers
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: |
+          node -e "if (require('fs').existsSync('package-lock.json')) require('fs').unlinkSync('package-lock.json')"
+          npm install --include=optional
+
+      - name: Generate all icon sizes
+        run: node scripts/generate-icons.js
+
+      - name: Build web application
+        run: npm run build
+
+      - name: Build Electron main script
+        run: npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext
+
+      - name: Package Windows Installers
+        run: npx electron-builder --win
+
+      - name: Upload Build Artifacts (Windows EXEs & AppX/MSIX)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Wcat-Windows-Installers
+          path: |
+            release/*.exe
+            release/*.appx
+            release/*.msix
