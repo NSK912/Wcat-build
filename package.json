@@ -53,7 +53,7 @@
     },
     "appx": {
       "applicationId": "Wcat",
-      "identityName": "NSK-Natsuki.SeedPlanet",
+      "identityName": "NSK-Natsuki.Wcat",
       "publisherDisplayName": "NSK-Natsuki",
       "publisher": "CN=F2BD52C0-1826-4F4C-953A-B27311D542C3",
       "artifactName": "Wcat Setup ${version}-${arch}.${ext}"
