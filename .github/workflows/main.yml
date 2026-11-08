@@ -30,8 +30,17 @@ jobs:
           node -e "if (require('fs').existsSync('package-lock.json')) require('fs').unlinkSync('package-lock.json')"
           npm install --include=optional
 
+      - name: Generate all icon sizes
+        run: node scripts/generate-icons.js
+
+      - name: Build web application
+        run: npm run build
+
+      - name: Build Electron main script
+        run: npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext
+
       - name: Package Native Windows ARM64 EXE (NSIS)
-        run: npm run electron:build:win:arm64
+        run: npx electron-builder --win nsis --arm64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -39,7 +48,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Wcat-Windows-ARM64-EXE
-          path: release/*arm64*.exe
+          path: |
+            release/*arm64*.exe
+            release/*.exe
+            dist-electron/*arm64*.exe
 
       - name: Create GitHub Release and Upload ARM64 EXE
         uses: softprops/action-gh-release@v2
@@ -47,6 +59,9 @@ jobs:
         with:
           tag_name: v3.5.3
           name: Wcat v3.5.3
-          files: release/*arm64*.exe
+          files: |
+            release/*arm64*.exe
+            release/*.exe
+            dist-electron/*arm64*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
