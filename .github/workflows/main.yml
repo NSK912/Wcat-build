@@ -1,112 +1,40 @@
-name: Build Windows Installers (x64 EXE + x64/ARM64 AppX)
+name: Build Electron Linux AppImage
 
 on:
   push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
+    branches: ["main", "master"]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  build-windows:
-    name: Build Windows Installers
-    runs-on: windows-latest
+  build-linux:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: Install npm dependencies
+      - name: Install dependencies
         run: |
           node -e "if (require('fs').existsSync('package-lock.json')) require('fs').unlinkSync('package-lock.json')"
-          npm install --include=optional
+          npm install
 
-      - name: Generate all icons and AppX Store assets
-        shell: bash
+      - name: Generate all icon sizes
+        run: node scripts/generate-icons.js
+
+      - name: Build Linux AppImage
         run: |
-          node --input-type=module << 'EOF'
-          import sharp from 'sharp';
-          import fs from 'fs';
-          import path from 'path';
+          npm run build
+          npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext
+          npx electron-builder --linux AppImage --publish never
 
-          const sourceImage = fs.existsSync('assets/Wcat seek.png')
-            ? 'assets/Wcat seek.png'
-            : 'public/icon.png';
-
-          if (!fs.existsSync(sourceImage)) {
-            throw new Error(`Icon source image not found: ${sourceImage}`);
-          }
-
-          console.log('Generating icons in GitHub Actions from:', sourceImage);
-
-          fs.mkdirSync('build/icons', { recursive: true });
-          fs.mkdirSync('build/appx', { recursive: true });
-          fs.mkdirSync('public', { recursive: true });
-
-          const bg = { r: 0, g: 0, b: 0, alpha: 0 };
-
-          await sharp(sourceImage)
-            .resize(512, 512, { fit: 'contain', background: bg })
-            .toFile('build/icon.png');
-
-          await sharp(sourceImage)
-            .resize(512, 512, { fit: 'contain', background: bg })
-            .toFile('public/icon.png');
-
-          const sizes = [16, 24, 32, 48, 64, 128, 256, 512];
-          for (const size of sizes) {
-            const iconPath = path.join('build/icons', `${size}x${size}.png`);
-            await sharp(sourceImage)
-              .resize(size, size, { fit: 'contain', background: bg })
-              .toFile(iconPath);
-            console.log(`Generated: ${iconPath}`);
-          }
-
-          const appxAssets = [
-            { name: 'StoreLogo.png', width: 50, height: 50 },
-            { name: 'Square44x44Logo.png', width: 44, height: 44 },
-            { name: 'Square150x150Logo.png', width: 150, height: 150 },
-            { name: 'Wide310x150Logo.png', width: 310, height: 150 },
-            { name: 'SmallTile.png', width: 71, height: 71 },
-            { name: 'LargeTile.png', width: 310, height: 310 },
-            { name: 'SplashScreen.png', width: 620, height: 300 },
-          ];
-
-          for (const asset of appxAssets) {
-            const assetPath = path.join('build/appx', asset.name);
-            await sharp(sourceImage)
-              .resize(asset.width, asset.height, { fit: 'contain', background: bg })
-              .toFile(assetPath);
-            console.log(`Generated AppX asset: ${assetPath} (${asset.width}x${asset.height})`);
-          }
-          EOF
-          ls -lh build/ build/appx/
-
-      - name: Build web application
-        run: npm run build
-
-      - name: Build Electron main script
-        run: npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext
-
-      - name: Package Windows Installers
-        run: npx electron-builder --win --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Build Artifacts (Windows EXEs & AppX/MSIX)
+      - name: Upload AppImage Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Wcat-Windows-Installers
-          path: |
-            release/*.exe
-            release/*.appx
-            release/*.msix
+          name: linux-appimage
+          path: release/*.AppImage
