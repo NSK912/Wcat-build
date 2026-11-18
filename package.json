@@ -11,8 +11,8 @@
     "clean": "rm -rf dist dist-electron server.js release",
     "lint": "tsc --noEmit",
     "generate:icons": "node scripts/generate-icons.js",
-    "electron:build": "npm run generate:icons && vite build && npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext && electron-builder --linux AppImage",
-    "electron:build:win": "npm run generate:icons && vite build && npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext && electron-builder --win"
+    "electron:build": "npm run generate:icons && vite build && npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext && electron-builder --linux AppImage --x64 --arm64 --publish never",
+    "electron:build:win": "npm run generate:icons && vite build && npx tsc electron/main.ts --outDir dist-electron --target esnext --module nodenext --moduleResolution nodenext && electron-builder --win --publish never"
   },
   "build": {
     "appId": "com.wcat.app",
@@ -62,11 +62,17 @@
     },
     "linux": {
       "target": [
-        "AppImage"
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ],
       "category": "AudioVideo",
       "icon": "build/icons",
-      "artifactName": "Wcat-${version}.${ext}"
+      "artifactName": "Wcat-${version}-${arch}.${ext}"
     }
   },
   "dependencies": {
